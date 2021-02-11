@@ -1,2 +1,2 @@
-# mykernel
-Practice kernel development
+# Juice
+My OS Development
