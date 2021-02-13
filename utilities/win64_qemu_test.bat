@@ -1,0 +1,1 @@
+qemu-system-x86_64 -L "C:\Program Files\qemu" -blockdev driver=file,node-name=f0,filename=boot.img -device floppy,drive=f0
