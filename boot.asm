@@ -1,35 +1,89 @@
-    section .text
-global _start
+   SECTION .TEXT
+GLOBAL _START
 
-_start:
-    ; bootloader is loaded at present address
-    [org 0x7c00]
+_START:
+    ; BOOTLOADER IS LOADED AT PRESENT ADDRESS
+    [ORG 0X7C00]
 
-    ; Set BIOS screen to TTY mode
-    mov ah, 0x0E
-
-    ; Set stack to slightly above end of boot sector as it grows downwards
-    ; Stack size = 0x8000 - (0x7c00 + 0x01FF)
-    mov bp, 0x8000
-    mov sp, bp
+    ; SET STACK TO SLIGHTLY ABOVE END OF BOOT SECTOR AS IT GROWS DOWNWARDS
+    ; STACK SIZE = 0X8000 - (0X7C00 + 0X01FF)
+    MV BP, 0X8000
+    MOV SP, BP
     
-    ; Print character to screen, then invoke BIOS video interrupt
-    mov al, 'H'
-    int 0x10
-    mov al, 'e'
-    int 0x10
-    mov al, 'l'
-    int 0x10
-    mov al, 'l'
-    int 0x10
-    mov al, 'o'
-    int 0x10
+    ; PRINT STRING TO SCREEN, THEN INVOKE BIOS VIDEO INTERRUPT
+    MOV SI, HELLO
+    CALL PRINT_STRING
 
-    ; Infinite loop
-    jmp $
+    MOV AX, 0XEF8D
+    CALL PRINT_HEX
+
+    ; INFINITE LOOP
+    JMP $
  
-    ; Pad boot sector (512 Bytes) with 0
-    times 510-($-$$) db 0
+    PRINT_STRING:
+    PUSHA
 
-    ; End of boot sector indicator
-    dw 0xaa55
+    LODSB
+    ; SET BIOS SCREEN TO TTY MODE
+    MOV AH, 0X0E
+    PRINT_LOOP:
+    INT 0X10
+    LODSB
+    CMP AL, 0
+    JNE PRINT_LOOP
+    
+    POPA
+    RET
+
+    PRINT_HEX:
+    PUSHA
+
+    MOV BX, 2
+
+    MOV DL, AH 
+    SHR DX, 4
+    CALL SET_HEX_OUT
+    INC BX
+ 
+    MOV DL, AH
+    AND DL, 0X0F
+    CALL SET_HEX_OUT
+    INC BX
+    
+    MOV DL, AL
+    SHR DX, 4
+    CALL SET_HEX_OUT
+    INC BX
+ 
+    MOV DL, AL
+    AND DL, 0X0F
+    CALL SET_HEX_OUT
+    INC BX
+
+    MOV SI, HEX_OUT
+    CALL PRINT_STRING
+
+    POPA
+    RET
+
+    SET_HEX_OUT:
+    CMP DL, 9
+    JG CORRECTION
+    OR [HEX_OUT+BX], DL
+    RET
+
+    CORRECTION:
+        SUB DL, 9
+        OR DL, 0X40
+        MOV [HEX_OUT+BX], DL
+    RET
+
+    ; STRINGS
+    HELLO: DB 'HELLO', 0
+    HEX_OUT: DB '0X0000', 0
+    
+    ; PAD BOOT SECTOR (512 BYTES) WITH 0
+    TIMES 510-($-$$) DB 0
+
+    ; END OF BOOT SECTOR INDICATOR
+    DW 0XAA55
