@@ -5,12 +5,13 @@
 # without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 
-BOOT=boot
+BOOT_BIN=boot
+BOOT_DEPS=main.asm prot_mode.asm io_funcs.asm gdt.asm
 
-all: $(BOOT).img
+all: $(BOOT_BIN).img
 
-clean: $(BOOT).img
+clean: $(BOOT_BIN).img
 	rm $^
 
-%.img: %.asm
-	nasm $^ -f bin -o $@
+$(BOOT_BIN).img: $(BOOT_DEPS)
+	nasm main.asm -f bin -o $@
